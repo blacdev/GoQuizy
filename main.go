@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strings"
@@ -11,28 +10,32 @@ import (
 
 func main(){
 	fmt.Println("testing hwo to read csv files")
-	data, err := readHtmlFile("problems.csv")
+	data, err := ParseCsv("")
+	if err != nil {
+		log.Fatal("could not parse csv file")
+	}
+	fmt.Println(data)
+}
+
+
+
+
+func readFile(filename string) (string, error){
+	if filename == ""{
+		filename = "problems.csv"
+	}
+	bs, err := os.ReadFile(filename)
+	return string(bs), err
+}
+
+
+func ParseCsv(file string) ([][]string, error) {
+	data, err := readFile(file)
 	if err != nil {
 		log.Fatal("failed to read file")
 	}
 	n := csv.NewReader(strings.NewReader(data))
 	
-	for {
-		record, err := n.Read()
-
-		if err == io.EOF{
-			break
-		}
-
-		if err != nil {
-			log.Fatal("something is wrong with the file")
-		}
-
-		fmt.Println(record)
-	}
-}
-
-func readHtmlFile(filename string) (string, error){
-	bs, err := os.ReadFile(filename)
-	return string(bs), err
+	d, err := n.ReadAll() 
+	return d, err
 }
