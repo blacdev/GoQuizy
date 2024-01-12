@@ -70,12 +70,10 @@ func main() {
 		<-timer.C
 	}()
 
-	var questionNumber int
+	
 
 loop:
-	for _, i := range data {
-
-		questionNumber++
+	for num, i := range data {
 
 		if scoreData.wrongAnswer+scoreData.rightAnswer == scoreData.QuestionCount {
 			break
@@ -83,7 +81,7 @@ loop:
 
 		answerch := make(chan string)
 
-		fmt.Printf("Question %d:\n", questionNumber)
+		fmt.Printf("Question %d:\n", num+1)
 
 		go func() {
 			answerch <- dataInput("Calculate " + i.q + "\nAnswer: ")
@@ -131,7 +129,7 @@ func (s *ScoreManager) ParseCsv(file string, randomize string) (ret []problem) {
 	if err != nil {
 		log.Fatal("failed to read CSV data")
 	}
-	
+
 	ret = make([]problem, len(records))
 
 	for i, j := range records {
