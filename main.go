@@ -31,6 +31,11 @@ type (
 		wrongAnswer   int
 		rightAnswer   int
 	}
+
+	
+	problem struct {
+		q, a string
+	}
 )
 
 
@@ -52,11 +57,9 @@ func main() {
 		fmt.Println("Defaulting to existing test...")
 	}
 
-	data, err := scoreData.ParseCsv(initializer.csv, initializer.randomize)
+	data := scoreData.ParseCsv(initializer.csv, initializer.randomize)
 
-	if err != nil {
-		log.Fatal("could not parse csv file.\nReason: ", err)
-	}
+	
 
 	// Start timer goroutine
 	dataInput("Press 'enter' to start test...")
@@ -83,7 +86,7 @@ loop:
 		fmt.Printf("Question %d:\n", questionNumber)
 
 		go func() {
-			answerch <- dataInput("Calculate " + i[0] + "\nAnswer: ")
+			answerch <- dataInput("Calculate " + i.q + "\nAnswer: ")
 		}()
 
 		select {
@@ -94,7 +97,7 @@ loop:
 
 		case answer := <-answerch:
 
-			if answer == i[1] {
+			if answer == i.a {
 				scoreData.rightAnswer++
 
 			} else {
@@ -115,28 +118,38 @@ func readFile(filename string) (string, error) {
 	return string(bs), err
 }
 
-func (s *ScoreManager) ParseCsv(file string, randomize string) (data [][]string, err error) {
-
+func (s *ScoreManager) ParseCsv(file string, randomize string) (ret []problem) {
 	fileData, err := readFile(file)
-
+	
 	if err != nil {
 		log.Fatal("failed to read file")
 	}
-
+	
 	nData := csv.NewReader(strings.NewReader(fileData))
-	data, err = nData.ReadAll()
+	records, err := nData.ReadAll()
+
+	if err != nil {
+		log.Fatal("failed to read CSV data")
+	}
+	
+	ret = make([]problem, len(records))
+
+	for i, j := range records {
+		ret[i] = problem{
+			q: j[0],
+			a: j[1],
+		}
+	}
 
 	if randomize == "true" {
 
 		newSource := rand.NewSource(seedValue)
 		rand.New(newSource)
-		rand.Shuffle(len(data), func(i, j int) {
-			data[i], data[j] = data[j], data[i]
+		rand.Shuffle(len(ret), func(i, j int) {
+			ret[i], ret[j] = ret[j], ret[i]
 		})
-	} else {
-
 	}
-	s.QuestionCount = len(data)
+	s.QuestionCount = len(ret)
 
 	return
 }
