@@ -135,7 +135,7 @@ func (s *ScoreManager) ParseCsv(file string, randomize string) (ret []problem) {
 	for i, j := range records {
 		ret[i] = problem{
 			q: j[0],
-			a: j[1],
+			a: strings.TrimSpace(j[1]),
 		}
 	}
 
@@ -160,7 +160,7 @@ func dataInput(str string) (data string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	fmt.Println(input)
 	data = strings.TrimSpace(input)
 	return
 }
